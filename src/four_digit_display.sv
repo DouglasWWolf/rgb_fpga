@@ -135,9 +135,11 @@ endmodule
 module four_digit_display
 (
     input i_clk,
-    input  [15:0] i_value,
+    input  [15:0] four_digit_display_tvalue,
+    input  four_digit_display_tvalid,
     output [7:0] o_cathode,
-    output [3:0] o_anode 
+    output [3:0] o_anode
+     
 );
 
     // States that our FSM walks thru
@@ -160,7 +162,7 @@ module four_digit_display
     reg [15:0] r_current_value = 59999;
     
     // A FSM that converts the binary value in 'i_value' into BCD stored in 'r_bcd'
-    binary_to_bcd#(.INPUT_WIDTH(16), .DECIMAL_DIGITS(4)) u1(i_clk, i_value, r_start_bcd_engine, r_bcd, r_dv);
+    binary_to_bcd#(.INPUT_WIDTH(16), .DECIMAL_DIGITS(4)) u1(i_clk, r_current_value, r_start_bcd_engine, r_bcd, r_dv);
 
     // A block of four 7-segment displays
     seven_seg u2(i_clk, r_bcd, o_cathode, o_anode); 
@@ -176,8 +178,8 @@ module four_digit_display
         // We're waiting for i_value to change           
         s_IDLE:
           begin 
-            if (i_value != r_current_value)  begin
-              r_current_value    <= i_value;
+            if (four_digit_display_tvalid && four_digit_display_tvalue != r_current_value)  begin
+              r_current_value    <= four_digit_display_tvalue;
               r_start_bcd_engine <= 1;
               r_state            <= s_WAIT_FOR_BCD;
             end

@@ -14,7 +14,7 @@
 //======================================================================================================================
 module button#(parameter ACTIVE=1) (input clk, input pin, output q);
     
-    parameter [31:0] DEBOUNCE_PERIOD = `SYSCLOCK_FREQ / 100;
+    localparam [31:0] DEBOUNCE_PERIOD = `SYSCLOCK_FREQ / 100;
 
     // If ACTIVE=1, an active edge is low-to-high.  If ACTIVE=0, an active edge is high-to-low
     localparam ACTIVE_EDGE = ACTIVE ? 2'b01 : 2'b10;

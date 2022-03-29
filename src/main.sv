@@ -25,6 +25,8 @@ module main
     logic [7:0] green = 100;
     logic [7:0] blue = 100;
 
+    logic one = 1;
+    
     logic is_up;
     logic is_down;
     logic is_ctr;
@@ -33,7 +35,14 @@ module main
     clock_div#(100000) u1(CLK100MHZ, pwm_clk);
 
     // This displays a value on a four-digit 7-segment display
-    four_digit_display u_four_digit_display1(CLK100MHZ, red,   SEG, AN[3:0]);
+    four_digit_display u_fdd
+    (
+        .i_clk(CLK100MHZ),
+        .four_digit_display_tvalue(red),
+        .four_digit_display_tvalid(one),
+        .o_cathode(SEG),
+        .o_anode(AN[3:0])
+    );
     
     pwm u_red(pwm_clk, red,    LED16_R);
     pwm u_grn(pwm_clk, green,  LED16_G);
@@ -82,7 +91,9 @@ module main
 
           
     end
-       
+    
+    // Turn off the upper four digits of the display   
+    assign AN[7:4] = 4'b1111;
 
 endmodule
 
