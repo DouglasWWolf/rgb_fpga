@@ -57,11 +57,11 @@ module seven_seg
         input         i_clk,
         input [15:0]  i_bcd,
         output [7:0]  o_cathode,
-        output [7:0]  o_anode
+        output [3:0]  o_anode
     );
 
     reg [7:0] r_cathode;
-    reg [7:0] r_anode;
+    reg [3:0] r_anode;
     reg [0:1] r_digit = 0;
     reg [3:0] r_bcd;
 
@@ -74,7 +74,7 @@ module seven_seg
         case (r_digit)
             0:
               begin
-                  r_anode <= 8'b11111110;
+                  r_anode <= 4'b1110;
                   r_bcd = i_bcd[3:0];
                   r_digit <= 1;              
               end
@@ -82,21 +82,21 @@ module seven_seg
               
             1:
               begin
-                  r_anode <= 8'b11111101;
+                  r_anode <= 4'b1101;
                   r_bcd = i_bcd[7:4];
                   r_digit <= 2;              
               end
               
             2:
               begin
-                  r_anode <= 8'b11111011;
+                  r_anode <= 4'b1011;
                   r_bcd = i_bcd[11:8];              
                   r_digit <= 3;
               end
             
             3:
               begin
-                  r_anode <= 8'b11110111;
+                  r_anode <= 4'b0111;
                   r_bcd = i_bcd[15:12];              
                   r_digit <= 0;
               end
@@ -137,7 +137,7 @@ module four_digit_display
     input i_clk,
     input  [15:0] i_value,
     output [7:0] o_cathode,
-    output [7:0] o_anode 
+    output [3:0] o_anode 
 );
 
     // States that our FSM walks thru

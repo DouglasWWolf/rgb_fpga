@@ -2,46 +2,51 @@
 `define SYSCLOCK_FREQ 100000000
 
 //======================================================================================================================
-// pos_edge_detector() - Detects highgoing edges of a pin (for instance, a button)
+// button() - Detects the high-going or low-going edge of a pin 
 //
 // Input:  clk = system clock
-//         pin = the pin to look for a high-going edge on
+//         pin = the pin to look for an edge on
 //
-// Output:  q = 1 if a high-going edge is detected, otherwise 0
+// Output:  q = 1 if an active-going edge is detected, otherwise 0
 //
-// Notes: edge detection is fully debounced.  q only goes high if a specified pin is still high
-//        10ms after the high-going edge was initially detected 
+// Notes: edge detection is fully debounced.  q only goes high if a specified pin is still active
+//        10ms after the active-going edge was initially detected 
 //======================================================================================================================
-module button(input clk, input pin, output q);
+module button#(parameter ACTIVE=1) (input clk, input pin, output q);
     
-    parameter [31:0] DEBOUNCE_PERIOD = `SYSCLOCK_FREQ / 200;
+    parameter [31:0] DEBOUNCE_PERIOD = `SYSCLOCK_FREQ / 100;
 
-    reg previous_pin_state = 0;
-    reg [31:0] debounce_clock = 0;
-    reg edge_detected = 0;    
+    // If ACTIVE=1, an active edge is low-to-high.  If ACTIVE=0, an active edge is high-to-low
+    localparam ACTIVE_EDGE = ACTIVE ? 2'b01 : 2'b10;
+    
+    logic [2:0] button_sync = ACTIVE ? 3'b000 : 3'b111;
+    logic [31:0] debounce_clock = 0;
+    logic edge_detected = 0;    
     
     // We're going to check for edges on every clock cycle
     always @(posedge clk) begin
-                
+
+        // Bit 2 is the oldest reliable state
+        // Bit 1 is the newst reliable state
+        // Bit 0 should be considered metastable        
+        button_sync = (button_sync << 1) | pin;
+        
+        // Presume for the moment that we haven't detected the active-going edge of the button        
         edge_detected <= 0;       
         
         // If the debounce clock is about to expire, find out of the user-specicied pin is still high
         if (debounce_clock == 1) begin
-            edge_detected <= pin;
+            edge_detected <= (button_sync[1] == ACTIVE);
             debounce_clock <= 0;
         end
         
-        // Otherwise, the debounce clock is still counting down, decrement it
+        // Otherwise, if the debounce clock is still counting down, decrement it
         else if (debounce_clock != 0) begin
             debounce_clock <= debounce_clock - 1;
         end  
         
         // If the pin is high and was previously low, start the debounce clock
-        if (pin & ~previous_pin_state) debounce_clock <= DEBOUNCE_PERIOD;
-        
-        // The 'previous_pin_state" register gets the current state of the pin for 
-        // use during the next clock cycle`
-        previous_pin_state <= pin;
+        if (button_sync[2:1] == ACTIVE_EDGE) debounce_clock <= DEBOUNCE_PERIOD;
     end
     
     // The output wire always reflects the state of the 'edge_detected' register
@@ -49,4 +54,3 @@ module button(input clk, input pin, output q);
     
 endmodule
 //======================================================================================================================
-

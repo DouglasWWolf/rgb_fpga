@@ -33,8 +33,7 @@ module main
     clock_div#(100000) u1(CLK100MHZ, pwm_clk);
 
     // This displays a value on a four-digit 7-segment display
-    four_digit_display u_four_digit_display(CLK100MHZ, red, SEG, AN);
-
+    four_digit_display u_four_digit_display1(CLK100MHZ, red,   SEG, AN[3:0]);
     
     pwm u_red(pwm_clk, red,    LED16_R);
     pwm u_grn(pwm_clk, green,  LED16_G);
